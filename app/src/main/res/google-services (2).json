@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "928295070149",
+    "firebase_url": "https://collegegram-cd0e4-default-rtdb.firebaseio.com",
+    "project_id": "collegegram-cd0e4",
+    "storage_bucket": "collegegram-cd0e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928295070149:android:9ed866a3dd63177586c3ac",
+        "android_client_info": {
+          "package_name": "com.codewithshristy.collegegram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "928295070149-0cecui1mjf05hte794jbjhvoufmtfrru.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.codewithshristy.collegegram",
+            "certificate_hash": "85eefda2ac2c154d3f15d669336f889564c063d9"
+          }
+        },
+        {
+          "client_id": "928295070149-mtq005p4fr94m4bmno251sdqc8675on5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrpDOSTc7sMS0gumuRMLYnfHWp4lzEDMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "928295070149-mtq005p4fr94m4bmno251sdqc8675on5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
