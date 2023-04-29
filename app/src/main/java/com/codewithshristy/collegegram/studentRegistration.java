@@ -15,6 +15,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,11 +29,12 @@ import java.util.ArrayList;
 
 public class studentRegistration extends AppCompatActivity {
 
-    DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReferenceFromUrl("https://collegegram-cd0e4-default-rtdb.firebaseio.com/");
-
     Spinner branch_spinner;
     Spinner year_spinner;
     TextView login;
+    String emailPattern="[a-zA-Z0-9._`]+@[a-z]+\\.+[a-z]+";
+
+    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,52 +48,60 @@ public class studentRegistration extends AppCompatActivity {
         final EditText ConfirmPass = findViewById(R.id.confirmpass);
         final Button RegisterBtn = findViewById(R.id.signupbtn);
 
-       RegisterBtn.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               final String FullNameTxt = FullName.getText().toString();
-               final String branchTxt=branch_spinner.getSelectedItem().toString();
-               final String yearTxt=year_spinner.getSelectedItem().toString();
-               final String regNoTxt = RegNo.getText().toString();
-               final String emailTxt = email.getText().toString();
-               final String PasswordTxt = Password.getText().toString();
-               final String ConfirmPassTxt = ConfirmPass.getText().toString();
+        RegisterBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String FullNameTxt = FullName.getText().toString();
+                final String branchTxt=branch_spinner.getSelectedItem().toString();
+                final String yearTxt=year_spinner.getSelectedItem().toString();
+                final String regNoTxt = RegNo.getText().toString();
+                final String emailTxt = email.getText().toString();
+                final String PasswordTxt = Password.getText().toString();
+                final String ConfirmPassTxt = ConfirmPass.getText().toString();
+                final int userType = 0;
 
-               if(FullNameTxt.isEmpty() || emailTxt.isEmpty()){
-                   Toast.makeText(studentRegistration.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-               }
-               else if(!PasswordTxt.equals(ConfirmPassTxt)){
-                   Toast.makeText(studentRegistration.this, "Passwords are not matching", Toast.LENGTH_SHORT).show();
-               }
-               else{
-                   databaseReference.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-                       @Override
-                       public void onDataChange(@NonNull DataSnapshot snapshot) {
-                           if(snapshot.hasChild(regNoTxt)){
-                               Toast.makeText(studentRegistration.this, "Already Registered", Toast.LENGTH_SHORT).show();
-                           }
-                           else{
-                               databaseReference.child("users").child(regNoTxt).child("fullname").setValue(FullNameTxt);
-                               databaseReference.child("users").child(regNoTxt).child("branch_spinner").setValue(branchTxt);
-                               databaseReference.child("users").child(regNoTxt).child("year_spinner").setValue(yearTxt);
-                               databaseReference.child("users").child(regNoTxt).child("email").setValue(emailTxt);
-                               databaseReference.child("users").child(regNoTxt).child("password").setValue(PasswordTxt);
+                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-                               Toast.makeText(studentRegistration.this, "User Registered Successfully.", Toast.LENGTH_SHORT).show();
-                               finish();
-                           }
-                       }
+                if(FullNameTxt.isEmpty() || emailTxt.isEmpty()){
+                    Toast.makeText(studentRegistration.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                }
+                else if(!regNoTxt.matches("^[0-9]{6}$")){
+                    if(regNoTxt.length()>6){
+                        RegNo.setError("Enter six digits only");
+                    }else{
+                        RegNo.setError("Enter only digits");
+                    }
+                }else if(!emailTxt.matches(emailPattern)){
+                    email.setError("Enter Correct Email");
+                }
+                else if(!PasswordTxt.equals(ConfirmPassTxt)){
+                    Toast.makeText(studentRegistration.this, "Passwords are not matching", Toast.LENGTH_SHORT).show();
+                }
+                else{
 
-                       @Override
-                       public void onCancelled(@NonNull DatabaseError error) {
+                    firebaseAuth.createUserWithEmailAndPassword(emailTxt,PasswordTxt).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
 
-                       }
-                   });
+                            if(task.isSuccessful()){
 
+                                String uid = task.getResult().getUser().getUid();
 
-               }
-           }
-       });
+                                Students student = new Students(uid,FullNameTxt,branchTxt,yearTxt,regNoTxt,emailTxt,PasswordTxt,0);
+                                firebaseDatabase.getReference().child("user").child(uid).setValue(student);
+
+                                Intent in = new Intent(studentRegistration.this, studentLogin.class);
+                                startActivity(in);
+                            }
+                            else{
+                                Toast.makeText(getApplicationContext(),task.getException().getLocalizedMessage(),Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                }
+            }
+        });
 
 
         branch_spinner = findViewById(R.id.branch_spinner);
@@ -99,7 +112,7 @@ public class studentRegistration extends AppCompatActivity {
         branch.add("Civil");
         branch.add("Mechanical");
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(studentRegistration.this,
-               R.layout.branchspinner,branch);
+                R.layout.branchspinner,branch);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         branch_spinner.setAdapter(adapter);
         branch_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
